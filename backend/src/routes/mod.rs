@@ -10,7 +10,8 @@ use crate::models::user::User;
 #[derive(OpenApi)]
 #[openapi(
     paths(
-        user_routes::get_users
+        user_routes::get_users,
+        user_routes::post_user
     ),
     components(
         schemas(User)

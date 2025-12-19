@@ -1,9 +1,9 @@
 use axum::{Json, Router, extract::State, http::StatusCode, routing::{get, post}};
-use sqlx::{PgPool, Postgres};
+use clorinde::{deadpool_postgres::Pool, queries::users::{get_all_users, insert_user}};
 
-use crate::models::user::User;
+use crate::api_types::User;
 
-pub fn routes() -> Router<PgPool> {
+pub fn routes() -> Router<Pool> {
     Router::new()
         .route("/users", get(get_users))
         .route("/user", post(post_user))
@@ -17,14 +17,24 @@ pub fn routes() -> Router<PgPool> {
         (status = StatusCode::INTERNAL_SERVER_ERROR, description = "Returns the error message", body = String)
     )
 )]
-async fn get_users(State(pool): State<PgPool>) -> (StatusCode, Result<Json<Vec<User>>, String>) {
-    let query = sqlx::query_as::<Postgres, User>("SELECT id, username FROM users");
+#[axum::debug_handler]
+async fn get_users(State(pool): State<Pool>) -> (StatusCode, Result<Json<Vec<User>>, String>) {
+    //let query = sqlx::query_as::<Postgres, User>("SELECT id, username FROM users");
 
-    let result = query.fetch_all(&pool).await;
+    let pool_result = pool.get().await;
+    if let Err(e) = pool_result {
+        return (StatusCode::INTERNAL_SERVER_ERROR, Err(e.to_string()));
+    }
+    let client = pool_result.unwrap();
+
+    let result = get_all_users().bind(&client).all().await;
     if result.is_err() {
         return (StatusCode::INTERNAL_SERVER_ERROR, Err(result.unwrap_err().to_string()));
     }
-    return (StatusCode::OK, Ok(Json(result.unwrap())));
+    let vec = result.unwrap();
+    let user_vec = vec.iter().map(|row| User {id: row.id, username: row.username.clone()}).collect();
+
+    return (StatusCode::OK, Ok(Json(user_vec)));
 }
 
 #[utoipa::path(
@@ -40,22 +50,27 @@ async fn get_users(State(pool): State<PgPool>) -> (StatusCode, Result<Json<Vec<U
         (status = StatusCode::INTERNAL_SERVER_ERROR, description = "Returns the error message", body = String)
     )
 )]
-async fn post_user(State(pool): State<PgPool>, username: String) -> (StatusCode, Result<Json<User>, String>) {
-    let query = sqlx::query_as::<Postgres, User>("INSERT INTO users (username) VALUES ($1) RETURNING id, username").bind(username);
+#[axum::debug_handler]
+async fn post_user(State(pool): State<Pool>, username: String) -> (StatusCode, Result<Json<User>, String>) {
 
-    let result = query.fetch_one(&pool).await;
+    let pool_result = pool.get().await;
+    if let Err(e) = pool_result {
+        return (StatusCode::INTERNAL_SERVER_ERROR, Err(e.to_string()));
+    }
+    let client = pool_result.unwrap();
+
+    let result = insert_user().bind(&client, &username).one().await;
     match result {
         Ok(row) => {
-            let created_user: User = User {id: row.id, username: row.username};
-            return (StatusCode::CREATED, Ok(Json(created_user)));
+            let inserted_user = User { id: row.id, username: row.username };
+            return (StatusCode::CREATED, Ok(Json(inserted_user)));
         }
         Err(e) => {
-            if let Some(some_eb_error) = e.as_database_error() {
+
+            if let Some(some_eb_error) = e.as_db_error() {
                 // Check for PostgreSQL unique violation error code
-                if let Some(code) = some_eb_error.code() {
-                    if code == "23505" { // ERROR: duplicate key value violates unique constraint "..."
-                        return (StatusCode::CONFLICT, Err("User already exists".to_string()));
-                    }
+                if some_eb_error.code().code() == "23505" {
+                    return (StatusCode::CONFLICT, Err("User already exists".to_string()));
                 }
             }
             return (StatusCode::INTERNAL_SERVER_ERROR, Err(e.to_string()));

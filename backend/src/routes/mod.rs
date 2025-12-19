@@ -1,11 +1,11 @@
 pub mod user_routes;
 
 use axum::Router;
-use sqlx::PgPool;
+use clorinde::deadpool_postgres::{Pool};
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
-use crate::models::user::User;
+use crate::api_types::User;
 
 #[derive(OpenApi)]
 #[openapi(
@@ -21,8 +21,7 @@ use crate::models::user::User;
     )
 )]
 struct ApiDoc;
-
-pub fn all_routes(pool: PgPool) -> Router {
+pub fn all_routes(pool: Pool) -> Router {
     Router::new()
         .merge(SwaggerUi::new("/doc").url("/api-docs/openapi.json", ApiDoc::openapi()))
         .merge(user_routes::routes())

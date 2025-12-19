@@ -37,6 +37,7 @@
 
               postgresql_18
               sqlx-cli # For migrations
+              clorinde
 
               act # To run github workflows locally
             ]
@@ -48,6 +49,7 @@
             export PG_DIR=$REPO_ROOT/postgres
             export PG_DATA_DIR=$PG_DIR/.pgdata
             export PG_SOCKET_DIR=$PG_DIR/.pgsock
+            export PG_HOST=$PG_SOCKET_DIR
 
             # Customizable
             export CUSTOM_PGUSER=pguser

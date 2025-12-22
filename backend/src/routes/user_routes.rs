@@ -36,11 +36,8 @@ async fn get_users(State(pool): State<Pool>) -> (StatusCode, Result<Json<Vec<Use
     let client = pool_result.unwrap();
 
     let result = get_all_users().bind(&client).all().await;
-    if result.is_err() {
-        return (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            Err(result.unwrap_err().to_string()),
-        );
+    if let Err(error) = result {
+        return (StatusCode::INTERNAL_SERVER_ERROR, Err(error.to_string()));
     }
     let vec = result.unwrap();
     let user_vec = vec

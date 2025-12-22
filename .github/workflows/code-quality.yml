@@ -4,13 +4,13 @@ on:
   push:
     branches: [main]
     paths:
-      - ".github/workflows/formatting.yml"
-      - "backend/src/"
+      - ".github/workflows/code-quality.yml"
+      - "backend/src/**"
   pull_request:
     branches: [main]
     paths:
-      - ".github/workflows/audit.yml"
-      - "backend/src/"
+      - ".github/workflows/code-quality.yml"
+      - "backend/src/**"
   workflow_dispatch:
 
 concurrency:

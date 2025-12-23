@@ -32,6 +32,7 @@ jobs:
         with:
           path: /tmp/nix-cache
           key: ${{ runner.os }}-nix-cache-${{ hashFiles('flake.lock', 'flake.nix', 'nix/**') }}
+          lookup-only: true
 
       - name: Install Nix
         id: nix-install

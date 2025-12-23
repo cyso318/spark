@@ -1,5 +1,5 @@
 [![Audit backend](https://github.com/Maloschnikow/SPARK-stack/actions/workflows/audit.yml/badge.svg)](https://github.com/Maloschnikow/SPARK-stack/actions/workflows/audit.yml)
-[![Code quality checks](https://github.com/Maloschnikow/SPARK-stack/actions/workflows/code-quality.yml/badge.svg)](https://github.com/Maloschnikow/SPARK-stack/actions/workflows/code-quality.yml)
+[![CI](https://github.com/Maloschnikow/SPARK-stack/actions/workflows/ci.yml/badge.svg)](https://github.com/Maloschnikow/SPARK-stack/actions/workflows/ci.yml)
 
 ## Development
 Might wanna use the [Nix](https://nixos.org/download/) packet manager with this one.

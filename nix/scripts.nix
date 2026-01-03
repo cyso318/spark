@@ -27,7 +27,9 @@
       else
           # Start PostgreSQL, in case no server runs already
           echo "Starting PostgreSQL..."
-          pg_ctl -D "$PG_DATA_DIR" -o "-k $PG_SOCKET_DIR" -l $PG_DIR/psql.log start
+          # -h \"\" will prevent postgres from trying to listen on localhost, which creates issues with act,
+          # when multiple containers try to start a database server
+          pg_ctl -D "$PG_DATA_DIR" -o "-k $PG_SOCKET_DIR -h \"\"" -l $PG_DIR/psql.log start
 
           # wait for postgres to start
           sleep 2
@@ -41,10 +43,18 @@
       # Check and create database
       if ! psql -h $PG_SOCKET_DIR -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname='$PGDATABASE'" | grep -q 1; then
           psql -h $PG_SOCKET_DIR -d postgres -c "CREATE DATABASE \"$PGDATABASE\" OWNER $CUSTOM_PGUSER;"
+          echo Created $PGDATABASE database.
+      fi
+
+      # Check and create test database
+      if ! psql -h $PG_SOCKET_DIR -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname='$PGDATABASE-test'" | grep -q 1; then
+          psql -h $PG_SOCKET_DIR -d postgres -c "CREATE DATABASE \"$PGDATABASE-test\" OWNER $CUSTOM_PGUSER;"
+          echo Created $PGDATABASE-test database.
       fi
 
       echo "PostgreSQL environment setup complete."
       echo "DATABASE_URL=\"$DATABASE_URL\" (in case you need it)"
+      echo "DATABASE_TEST_URL=\"$DATABASE_TEST_URL\" (in case you need it)"
     '')
 
     (mkScript "db-stop" ''

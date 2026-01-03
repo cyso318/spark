@@ -8,11 +8,26 @@
         {
             "ssh": "Disabled",
             "previewLimit": 50,
+            "server": "localhost",
+            "port": 5432,
             "driver": "PostgreSQL",
-            "name": "db",
             "socketPath": "postgres/.pgsock/.s.PGSQL.5432",
+            "username": "pguser",
+            "database": "db-test",
+            "name": "db-test",
+            "password": "password"
+        },
+        {
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 5432,
+            "driver": "PostgreSQL",
+            "socketPath": "postgres/.pgsock/.s.PGSQL.5432",
+            "username": "pguser",
             "database": "db",
-            "username": "pguser"
+            "name": "db",
+            "password": "password"
         }
     ]
 }

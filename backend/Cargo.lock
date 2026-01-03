@@ -10,6 +10,7 @@ dependencies = [
  "clorinde",
  "serde",
  "tokio",
+ "tower",
  "utoipa",
  "utoipa-swagger-ui",
 ]

@@ -11,3 +11,6 @@ utoipa = { version = "5", features = ["axum_extras"] }
 utoipa-swagger-ui = { version = "9", features = ["axum"] }
 #sqlx = { default-features = false, version = "0.8", features = ["postgres", "macros", "runtime-tokio-rustls"] }
 clorinde = { path = "clorinde" }
+
+[dev-dependencies]
+tower = { version = "0.5.2", features = ["util"] }

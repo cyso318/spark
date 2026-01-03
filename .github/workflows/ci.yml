@@ -1,5 +1,8 @@
 name: CI
 
+permissions:
+  contents: read
+
 on:
   push:
     branches: [main]
@@ -53,7 +56,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        cargo-command: ["fmt -- --check", "clippy -- -D warnings --allow clippy::needless_return"]
+        context:
+          # cargo command, requires database
+          [
+            ["fmt -- --check", false],
+            ["clippy -- -D warnings --allow clippy::needless_return", false],
+            ["test", true]
+          ]
     steps:
       - uses: actions/checkout@v6
 
@@ -68,15 +77,24 @@ jobs:
           path: /tmp/nix-cache
           key: ${{ runner.os }}-nix-cache-${{ hashFiles('flake.lock', 'flake.nix', 'nix/**') }}
 
+      - run: |
+          echo No Cache found, but one should have been saved
+          exit 1
+        if: steps.nix-cache.outputs.cache-hit != 'true'
+      
       # https://github.com/cachix/install-nix-action/issues/56#issuecomment-1240991760 (thanks)
       - name: Import Nix store cache
-        if: steps.nix-cache.outputs.cache-hit == 'true'
         run: "nix-store --import < /tmp/nix-cache"
 
       - name: Pre-build devShell # In theory the Nix cache should have a hit and therefore the devShell should already be built in the cache
         run: nix build --no-link .#devShells.$(nix eval --impure --raw --expr 'builtins.currentSystem').default
 
+      - name: Start Database
+        if: matrix.context[1]
+        shell: nix develop -c bash -e {0}
+        run: db-start
+
       - name: Perform check
         working-directory: backend/
         shell: nix develop ../ -c bash -e {0}
-        run: cargo ${{matrix.cargo-command}}
+        run: cargo ${{matrix.context[0]}}

@@ -72,6 +72,8 @@ I recommend using the `full` sized image, they are quite large, but are essentia
 equal to GitHub runners. More about the runners can be found [here](https://nektosact.com/usage/runners.html).
 A usage guide can be found [here](https://nektosact.com/usage/index.html).
 
+> [!IMPORTANT]
+> If you need to run `acts` with `sudo`, make sure to preserve the user environment with `sudo -E acts`.
 
 ### Folder structure
 Here's a quick overview over what you can find where in this repository.

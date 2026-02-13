@@ -49,7 +49,7 @@ jobs:
           STORE_PATHS=$(nix path-info -r $(nix build --no-link --print-out-paths .#devShells.$(nix eval --impure --raw --expr 'builtins.currentSystem').default))
           nix-store --export $STORE_PATHS > /tmp/nix-cache
           
-  formatting-check:
+  backend-checks:
     name: Checks
     runs-on: ubuntu-latest
     needs: build-cache-nix # Build a Nix cache first, so all matrix runners have access to it
